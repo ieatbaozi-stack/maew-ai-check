@@ -70,6 +70,60 @@ def _set_windows_app_id() -> None:
         pass
 
 
+def _apply_windows_taskbar_icon(window: webview.Window) -> list[int]:
+    """Apply WM_SETICON directly to the live WinForms HWND after frameless init."""
+    if sys.platform != "win32":
+        return []
+    ico_path = _app_icon_path()
+    if not ico_path:
+        return []
+    try:
+        native = getattr(window, "native", None)
+        if native is None:
+            return []
+        hwnd = int(native.Handle.ToInt64())
+        if not hwnd:
+            return []
+
+        user32 = ctypes.windll.user32
+        user32.LoadImageW.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_wchar_p,
+            ctypes.c_uint,
+            ctypes.c_int,
+            ctypes.c_int,
+            ctypes.c_uint,
+        ]
+        user32.LoadImageW.restype = ctypes.c_void_p
+        user32.SendMessageW.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_uint,
+            ctypes.c_size_t,
+            ctypes.c_ssize_t,
+        ]
+        user32.SendMessageW.restype = ctypes.c_ssize_t
+
+        IMAGE_ICON = 1
+        LR_LOADFROMFILE = 0x0010
+        WM_SETICON = 0x0080
+        ICON_SMALL = 0
+        ICON_BIG = 1
+
+        handles: list[int] = []
+        h_small = user32.LoadImageW(None, ico_path, IMAGE_ICON, 16, 16, LR_LOADFROMFILE)
+        h_big = user32.LoadImageW(None, ico_path, IMAGE_ICON, 48, 48, LR_LOADFROMFILE)
+        if h_small:
+            user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, h_small)
+            handles.append(int(h_small))
+        if h_big:
+            user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, h_big)
+            handles.append(int(h_big))
+        return handles
+    except Exception as exc:  # noqa: BLE001
+        log.debug("Failed to apply taskbar icon: %s", exc)
+        return []
+
+
 def _setup_logging() -> None:
     log_dir = app_data_dir()
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -616,6 +670,8 @@ class MaewApp:
 
         def _on_start() -> None:
             assert self._tray is not None
+            assert self._window is not None
+            self._window_icons = _apply_windows_taskbar_icon(self._window)
             self._tray.start()
             threading.Thread(
                 target=self._scheduler_loop,
