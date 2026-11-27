@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>maew usage</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top bar (drag region) -->
+    <div class="topbar pywebview-drag-region">
+      <div class="brand">
+        <canvas id="brandCat" class="pixel" width="16" height="14" aria-hidden="true"></canvas>
+        <span class="brand-title">maew usage</span>
+      </div>
+      <div class="top-actions">
+        <button id="btnCompact" class="icon-btn" title="Compact view" aria-label="Compact view">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6l4 4 4-4"/>
+          </svg>
+        </button>
+        <button id="btnRefresh" class="icon-btn" title="Refresh now" aria-label="Refresh now">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13.5 8a5.5 5.5 0 1 1-1.4-3.7"/>
+            <path d="M13.5 2.8v2.7h-2.7"/>
+          </svg>
+        </button>
+        <button id="btnPin" class="icon-btn" title="Always on top" aria-label="Always on top">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2.5h4l-.6 3.7 2.1 2.1v1.2H4.5V8.3l2.1-2.1L6 2.5z"/>
+            <path d="M8 9.5V14"/>
+          </svg>
+        </button>
+        <button id="btnSettings" class="icon-btn" title="Settings" aria-label="Settings">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8" cy="8" r="2.2"/>
+            <path d="M8 2.2v1.3M8 12.5v1.3M2.2 8h1.3M12.5 8h1.3M3.9 3.9l.9.9M11.2 11.2l.9.9M12.1 3.9l-.9.9M4.8 11.2l-.9.9"/>
+          </svg>
+        </button>
+        <button id="btnHide" class="icon-btn" title="Hide to tray" aria-label="Hide to tray">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M4.5 4.5l7 7M11.5 4.5l-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Minimal 8-bit Cat Shelf -->
+    <div class="cat-shelf">
+      <div id="catPetArea" class="cat-pet-area" title="Pet the cat">
+        <canvas id="catCanvas" class="pixel" width="60" height="48"></canvas>
+        <span id="petWhisper" class="pet-whisper">purr~</span>
+      </div>
+      <div class="shelf-meta">
+        <div id="shelfState" class="shelf-state">Checking...</div>
+        <div id="shelfSub" class="shelf-sub">Peak --%</div>
+      </div>
+      <div id="compactReadout" class="compact-readout"></div>
+    </div>
+
+    <!-- Main Flat Gauge View -->
+    <main id="dashboardView" class="scroll-body">
+      <div id="providersContainer"></div>
+    </main>
+
+    <!-- Settings View -->
+    <section id="settingsView" class="scroll-body hidden">
+      <div class="settings-head">
+        <button id="btnBackDash" class="back-btn">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 3.5L5.5 8 10 12.5"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label">Cat companion</div>
+        <div id="skinGrid" class="skin-grid"></div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label">Appearance &amp; refresh</div>
+        <div class="setting-row">
+          <span>Theme</span>
+          <div class="segmented">
+            <button id="themeDark" class="seg-btn" type="button">Dark</button>
+            <button id="themeLight" class="seg-btn" type="button">Light</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Active interval</span>
+          <div class="stepper">
+            <button id="activeDec" class="step-btn" type="button" aria-label="Decrease active interval">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 6h7"/></svg>
+            </button>
+            <span id="activeVal" class="step-val">5m</span>
+            <button id="activeInc" class="step-btn" type="button" aria-label="Increase active interval">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2.5v7M2.5 6h7"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Idle backoff max</span>
+          <div class="stepper">
+            <button id="idleDec" class="step-btn" type="button" aria-label="Decrease idle backoff">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 6h7"/></svg>
+            </button>
+            <span id="idleVal" class="step-val">60m</span>
+            <button id="idleInc" class="step-btn" type="button" aria-label="Increase idle backoff">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2.5v7M2.5 6h7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label-row">
+          <div class="setting-label" style="margin-bottom:0;">Providers</div>
+          <button id="btnScanProviders" class="scan-btn" type="button" title="Scan this PC for installed AI harnesses">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="7.2" cy="7.2" r="4.5"/>
+              <path d="M13.5 13.5l-3-3"/>
+            </svg>
+            <span>Scan</span>
+          </button>
+        </div>
+        <div id="providersSettingsList" class="providers-settings-list"></div>
+      </div>
+
+      <div class="btn-row" style="justify-content:flex-end;">
+        <button id="btnSaveSettings" class="btn primary" type="button">Save</button>
+      </div>
+    </section>
+
+    <!-- Quiet Footer -->
+    <footer class="footer-bar">
+      <span id="footerUpdated">Starting...</span>
+      <span id="footerNext">Next --</span>
+    </footer>
+  </div>
+
+  <script src="cat-sprites.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

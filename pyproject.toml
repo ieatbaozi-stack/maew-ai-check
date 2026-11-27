@@ -1,0 +1,65 @@
+[project]
+name = "maew-usage"
+version = "1.0.0"
+description = "Lightweight, privacy-first 8-bit cat desktop widget for monitoring Claude, Antigravity, Codex, Copilot, OpenRouter, OpenCode Go, and MiniMax quotas on Windows."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+keywords = [
+    "ai",
+    "usage-monitor",
+    "claude-code",
+    "antigravity",
+    "codex",
+    "copilot",
+    "openrouter",
+    "windows",
+    "desktop-widget",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Operating System :: Microsoft :: Windows :: Windows 11",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "pywebview>=5.3",
+    "pystray>=0.19.5",
+    "Pillow>=10.0",
+    "requests>=2.32",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pyinstaller>=6.6",
+]
+
+[project.urls]
+Homepage = "https://github.com/ieatbaozi-stack/maew-ai-check"
+Repository = "https://github.com/ieatbaozi-stack/maew-ai-check"
+Issues = "https://github.com/ieatbaozi-stack/maew-ai-check/issues"
+
+[project.scripts]
+maew-usage = "maew.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+maew = ["providers/rates.json", "frontend/*", "frontend/fonts/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,32 @@
+name: Provider layout or API changed
+description: Report when a provider (Claude, Antigravity, Codex, etc.) stops reading quotas after an upstream update
+title: "[Provider]: "
+labels: ["provider"]
+body:
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Affected provider
+      options:
+        - Claude.ai (web)
+        - Claude Code (local logs)
+        - Antigravity (agy CLI)
+        - Codex (ChatGPT)
+        - GitHub Copilot
+        - OpenRouter
+        - OpenCode Go
+        - MiniMax
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Observed error or UI change
+      description: Paste the error message shown in maew usage or describe the new labels/output shape.
+    validations:
+      required: true
+  - type: input
+    id: cli_version
+    attributes:
+      label: CLI / App version (if applicable)
+      placeholder: "e.g. agy 1.5.17, claude 2.1.316"

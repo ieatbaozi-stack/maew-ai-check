@@ -1,0 +1,35 @@
+name: Bug report
+description: Report a crash, UI glitch, or unexpected behavior in maew usage
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Launch maew usage
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "Windows 11 24H2, Python 3.12, maew usage v1.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines (%APPDATA%\maew-ai-check\maew.log)
+      description: Please remove any personal paths or emails before pasting.
+      render: text
