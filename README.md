@@ -55,45 +55,62 @@ Claude and Antigravity are enabled by default; all other providers are built in 
 
 ## Installation & Quick Start
 
-### Option 1: Run from Source (Recommended — Zero SmartScreen Warnings)
+### Option 1: One-Line Install — Scoop / `uv` / `pipx` (Recommended — No SmartScreen Prompt)
+
+**With [Scoop](https://scoop.sh/)** (no Python required, creates a Start Menu shortcut automatically):
 
 ```powershell
-git clone https://github.com/ieatbaozi-stack/maew-ai-check.git
-cd maew-ai-check
-
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e .
+scoop install https://raw.githubusercontent.com/ieatbaozi-stack/maew-ai-check/main/bucket/maew-usage.json
 ```
 
-Launch **without a console window**:
+Or add the bucket to receive updates via `scoop update maew-usage`:
 
 ```powershell
-.\.venv\Scripts\pythonw.exe run.py
+scoop bucket add maew https://github.com/ieatbaozi-stack/maew-ai-check
+scoop install maew/maew-usage
 ```
 
-Or launch from a terminal / installed entry point:
+**With [`uv`](https://docs.astral.sh/uv/) or [`pipx`](https://pipx.pypa.io/)** (installs a windowless `maew-usage` command on your `PATH`):
 
 ```powershell
-.\.venv\Scripts\maew-usage.exe
+# Using uv
+uv tool install git+https://github.com/ieatbaozi-stack/maew-ai-check.git
+
+# Or using pipx
+pipx install git+https://github.com/ieatbaozi-stack/maew-ai-check.git
+```
+
+Then launch anytime with:
+
+```powershell
+maew-usage
 ```
 
 ### Option 2: Download Pre-Built Windows Release
 
-1. Go to the **Releases** page and download `maew-usage-v1.0.0-windows-x64.zip`.
+1. Go to the **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)** page and download `maew-usage-v1.0.0-windows-x64.zip`.
 2. Verify the checksum against `SHA256SUMS.txt` (optional):
    ```powershell
    Get-FileHash .\maew-usage-v1.0.0-windows-x64.zip -Algorithm SHA256
    ```
 3. Extract the folder and run `maew-usage.exe`.
 
-> **Note on Windows Defender SmartScreen:** Standalone releases are currently unsigned open-source builds. If Windows SmartScreen prompts on first launch, inspect the source code, build locally via `.\scripts\build.ps1`, or run via Option 1.
+> **Note on Windows Defender SmartScreen:** Pre-built `.zip` releases are currently unsigned open-source builds, so Windows may show a SmartScreen prompt on first launch when downloaded through a browser. Click **More info → Run anyway**, or install via **Option 1** (Scoop / `uv` / `pipx`) for a zero-warning setup.
 
-### Option 3: Build a Standalone `.exe` Locally
+### Option 3: Run from Source or Build Locally
 
 ```powershell
+git clone https://github.com/ieatbaozi-stack/maew-ai-check.git
+cd maew-ai-check
+
+python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+
+# Launch without a console window
+.\.venv\Scripts\pythonw.exe run.py
+
+# Or build your own standalone dist\maew-usage\maew-usage.exe
 .\scripts\build.ps1
-# Output: dist\maew-usage\maew-usage.exe
 ```
 
 ---

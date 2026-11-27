@@ -1,0 +1,30 @@
+{
+    "version": "1.0.0",
+    "description": "Lightweight, privacy-first 8-bit cat desktop widget for monitoring AI coding quotas on Windows.",
+    "homepage": "https://github.com/ieatbaozi-stack/maew-ai-check",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/ieatbaozi-stack/maew-ai-check/releases/download/v1.0.0/maew-usage-v1.0.0-windows-x64.zip",
+            "hash": "f8102a25caf9f26d94b84163366718b4e6361814abb504bdcc4f0287efad325a"
+        }
+    },
+    "bin": "maew-usage.exe",
+    "shortcuts": [
+        [
+            "maew-usage.exe",
+            "maew usage"
+        ]
+    ],
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/ieatbaozi-stack/maew-ai-check/releases/download/v$version/maew-usage-v$version-windows-x64.zip",
+                "hash": {
+                    "url": "https://github.com/ieatbaozi-stack/maew-ai-check/releases/download/v$version/SHA256SUMS.txt"
+                }
+            }
+        }
+    }
+}

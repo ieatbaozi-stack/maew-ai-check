@@ -47,7 +47,7 @@ Homepage = "https://github.com/ieatbaozi-stack/maew-ai-check"
 Repository = "https://github.com/ieatbaozi-stack/maew-ai-check"
 Issues = "https://github.com/ieatbaozi-stack/maew-ai-check/issues"
 
-[project.scripts]
+[project.gui-scripts]
 maew-usage = "maew.__main__:main"
 
 [build-system]
