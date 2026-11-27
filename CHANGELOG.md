@@ -23,3 +23,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Local Harness Auto-Scanner**: offline read-only scan button in Settings to detect installed CLIs, log folders, and saved keys.
 - **Adaptive Polling Scheduler**: 5-minute active cadence with exponential idle backoff up to 60 minutes and automatic pull-forward 1 minute after predicted quota resets.
 - **Windows DPAPI encrypted secret storage** (`crypt32.dll`) and self-hosted offline fonts (`IBM Plex Sans` + `JetBrains Mono`).
+- **Windows distribution**: per-user Inno Setup installer (`-setup.exe` with Start Menu & optional Windows startup), portable `.zip` with `.NET` `loadFromRemoteSources` config, Scoop bucket manifest (`bucket/maew-usage.json`), and windowless `uv`/`pipx` GUI entry point.

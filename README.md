@@ -55,7 +55,17 @@ Claude and Antigravity are enabled by default; all other providers are built in 
 
 ## Installation & Quick Start
 
-### Option 1: One-Line Install — Scoop / `uv` / `pipx` (Recommended — No SmartScreen Prompt)
+### Option 1: Windows Installer (Easiest — Recommended for Most Users)
+
+1. Go to the **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)** page and download **`maew-usage-v1.0.0-windows-x64-setup.exe`**.
+2. Run the installer (no administrator rights required):
+   - Installs cleanly to `%LOCALAPPDATA%\Programs\maew-usage`
+   - Adds a **Start Menu** shortcut (`maew usage`) and optional **Launch at Windows startup**
+   - Supports clean uninstall via **Windows Settings → Installed apps**
+
+> **Note on Windows Defender SmartScreen:** Pre-built release binaries are currently unsigned open-source builds, so Windows may show a SmartScreen prompt on first launch when downloaded through a browser. Click **More info → Run anyway**, verify against `SHA256SUMS.txt`, or install via **Option 2** below for a zero-prompt setup.
+
+### Option 2: One-Line Install — Scoop / `uv` / `pipx` (Zero SmartScreen Prompt)
 
 **With [Scoop](https://scoop.sh/)** (no Python required, creates a Start Menu shortcut automatically):
 
@@ -86,32 +96,30 @@ Then launch anytime with:
 maew-usage
 ```
 
-### Option 2: Download Pre-Built Windows Release
+### Option 3: Portable `.zip` or Build Locally
 
-1. Go to the **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)** page and download `maew-usage-v1.0.0-windows-x64.zip`.
-2. Verify the checksum against `SHA256SUMS.txt` (optional):
-   ```powershell
-   Get-FileHash .\maew-usage-v1.0.0-windows-x64.zip -Algorithm SHA256
-   ```
-3. Extract the folder and run `maew-usage.exe`.
+- **Portable `.zip`:** Download `maew-usage-v1.0.0-windows-x64.zip` from **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)**, extract the full folder (keeping `maew-usage.exe`, `maew-usage.exe.config`, and `_internal\` together), and run `maew-usage.exe`.
+- **Verify checksum (optional):**
+  ```powershell
+  Get-FileHash .\maew-usage-v1.0.0-windows-x64-setup.exe -Algorithm SHA256
+  ```
+- **Run from source or build locally:**
+  ```powershell
+  git clone https://github.com/ieatbaozi-stack/maew-ai-check.git
+  cd maew-ai-check
 
-> **Note on Windows Defender SmartScreen:** Pre-built `.zip` releases are currently unsigned open-source builds, so Windows may show a SmartScreen prompt on first launch when downloaded through a browser. Click **More info → Run anyway**, or install via **Option 1** (Scoop / `uv` / `pipx`) for a zero-warning setup.
+  python -m venv .venv
+  .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 
-### Option 3: Run from Source or Build Locally
+  # Launch without a console window
+  .\.venv\Scripts\pythonw.exe run.py
 
-```powershell
-git clone https://github.com/ieatbaozi-stack/maew-ai-check.git
-cd maew-ai-check
+  # Build standalone folder (dist\maew-usage\maew-usage.exe)
+  .\scripts\build.ps1
 
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-
-# Launch without a console window
-.\.venv\Scripts\pythonw.exe run.py
-
-# Or build your own standalone dist\maew-usage\maew-usage.exe
-.\scripts\build.ps1
-```
+  # Or build both the standalone folder and the Inno Setup installer (requires Inno Setup 6)
+  .\scripts\build.ps1 -Installer
+  ```
 
 ---
 
