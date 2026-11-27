@@ -16,6 +16,7 @@ try {
     & $venvPy -m PyInstaller `
         --noconfirm `
         --clean `
+        --noupx `
         --windowed `
         --name "maew-usage" `
         --icon "src\maew\assets\maew-usage.ico" `
@@ -24,6 +25,20 @@ try {
         --add-data "src\maew\assets;maew\assets" `
         --add-data "src\maew\providers\rates.json;maew\providers" `
         run.py
+
+    # Required so .NET Framework (pythonnet / pywebview) can load bundled
+    # managed assemblies when users extract a downloaded .zip from GitHub
+    # Releases (Windows Explorer marks extracted files with Mark of the Web).
+    $appConfig = @"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <runtime>
+    <loadFromRemoteSources enabled="true"/>
+  </runtime>
+</configuration>
+"@
+    $configOut = Join-Path $repoRoot "dist\maew-usage\maew-usage.exe.config"
+    [System.IO.File]::WriteAllText($configOut, $appConfig, [System.Text.UTF8Encoding]::new($false))
 } finally {
     Pop-Location
 }
