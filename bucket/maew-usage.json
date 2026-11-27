@@ -6,7 +6,7 @@
     "architecture": {
         "64bit": {
             "url": "https://github.com/ieatbaozi-stack/maew-ai-check/releases/download/v1.0.0/maew-usage-v1.0.0-windows-x64.zip",
-            "hash": "ed59dabf98b637858739e4905a22c55de393d9167bc4a6dabac699ed9fd4ea91"
+            "hash": "db34f28f120f388d7e6d056425a171bb31bb06d0bd8e6beec3cec0463739a00c"
         }
     },
     "bin": "maew-usage.exe",
