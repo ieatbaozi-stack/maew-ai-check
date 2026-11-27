@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import ctypes
 import json
 import logging
+import sys
 import threading
 import time
 from dataclasses import replace
@@ -52,6 +54,20 @@ WEB_LOGIN_TARGETS: dict[str, tuple[str, str, str, str]] = {
 
 def _frontend_index_path() -> str:
     return str((Path(__file__).resolve().parent / "frontend" / "index.html"))
+
+
+def _app_icon_path() -> str | None:
+    candidate = Path(__file__).resolve().parent / "assets" / "maew-usage.ico"
+    return str(candidate) if candidate.is_file() else None
+
+
+def _set_windows_app_id() -> None:
+    if sys.platform != "win32":
+        return
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("maew.usage.app.1")
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _setup_logging() -> None:
@@ -565,6 +581,7 @@ class MaewApp:
 
     def run(self) -> None:
         _setup_logging()
+        _set_windows_app_id()
         log.info("Starting maew usage %s (data=%s)", __version__, app_data_dir())
 
         storage_dir = webview_storage_dir()
@@ -611,6 +628,7 @@ class MaewApp:
             gui="edgechromium",
             private_mode=False,
             storage_path=str(storage_dir),
+            icon=_app_icon_path(),
             debug=False,
         )
 

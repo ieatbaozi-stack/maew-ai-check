@@ -18,8 +18,10 @@ try {
         --clean `
         --windowed `
         --name "maew-usage" `
+        --icon "src\maew\assets\maew-usage.ico" `
         --paths "src" `
         --add-data "src\maew\frontend;maew\frontend" `
+        --add-data "src\maew\assets;maew\assets" `
         --add-data "src\maew\providers\rates.json;maew\providers" `
         run.py
 } finally {

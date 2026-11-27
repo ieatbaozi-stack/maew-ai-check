@@ -58,7 +58,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-maew = ["providers/rates.json", "frontend/*", "frontend/fonts/*"]
+maew = ["providers/rates.json", "frontend/*", "frontend/fonts/*", "assets/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
