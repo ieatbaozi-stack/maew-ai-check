@@ -1,6 +1,6 @@
 [project]
 name = "maew-usage"
-version = "1.0.1"
+version = "1.0.2"
 description = "Lightweight, privacy-first 8-bit cat desktop widget for monitoring Claude, Antigravity, Codex, Copilot, OpenRouter, OpenCode Go, and MiniMax quotas on Windows."
 readme = "README.md"
 requires-python = ">=3.11"

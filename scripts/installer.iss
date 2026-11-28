@@ -1,7 +1,7 @@
 ; Inno Setup 6 script for maew usage (per-user Windows installer, no UAC prompt)
 
 #ifndef AppVersion
-  #define AppVersion "1.0.1"
+  #define AppVersion "1.0.2"
 #endif
 
 [Setup]

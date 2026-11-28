@@ -283,7 +283,11 @@ body.compact .compact-readout {
   color: var(--text-muted);
 }
 
-.compact-item.is-blocked {
+.compact-item.is-locked {
+  color: var(--dot-err);
+}
+
+.compact-item.is-locked .compact-val {
   color: var(--dot-err);
 }
 

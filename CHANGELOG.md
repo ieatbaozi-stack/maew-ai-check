@@ -5,6 +5,14 @@ All notable changes to `maew usage` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-11-29
+
+### Changed
+- **Hierarchical quota lock indicators (`7d` > `5h`)**:
+  - When `7d` (weekly) hits `100%`, both the `7d` row (`Locked · <reset>`) and its child `5h` row (`Locked · 7d full`) display red lock indicators.
+  - When only `5h` hits `100%` (`7d < 100%`), only the `5h` row displays `Locked · <reset>` while `7d` remains unlocked.
+  - Compact Mode now shows the red padlock whenever **either** `7d` or `5h` (or any multi-group window in Antigravity) is locked.
+
 ## [1.0.1] - 2026-11-28
 
 ### Added

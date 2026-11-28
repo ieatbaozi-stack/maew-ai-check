@@ -157,9 +157,14 @@
     }
 
     // Standard rule: ALWAYS report 5h session % for 5h/7d providers;
-    // for 30d/24h-only providers (Copilot, OpenRouter), report their primary metric.
+    // prioritize any locked group (7d or 5h at 100%) so compact mode never hides a block.
     const groups = Array.from(byGroup.values());
-    let chosen = groups.find((list) => list.some((m) => isSession5hMetric(m) && (m.percent_used || 0) > 0));
+    let chosen = groups.find(
+      (list) => groupWeeklyCapped(list) || list.some((m) => isAtLimit(m))
+    );
+    if (!chosen) {
+      chosen = groups.find((list) => list.some((m) => isSession5hMetric(m) && (m.percent_used || 0) > 0));
+    }
     if (!chosen) chosen = groups.find((list) => list.some((m) => isSession5hMetric(m)));
     if (!chosen) chosen = groups[0] || [];
 
@@ -167,6 +172,8 @@
     const mPrimary = m5h || chosen[0];
     const m7d = chosen.find((m) => isWeeklyMetric(m));
     const weeklyBlocked = groupWeeklyCapped(chosen);
+    const primaryBlocked = isAtLimit(mPrimary);
+    const isLocked = weeklyBlocked || primaryBlocked;
     const primaryPct =
       mPrimary && typeof mPrimary.percent_used === "number"
         ? Math.round(mPrimary.percent_used)
@@ -177,8 +184,11 @@
     return {
       primaryLabel: mPrimary ? mPrimary.label : "5h",
       primaryPct,
+      primaryReset: mPrimary ? formatReset(mPrimary.resets_at, mPrimary.reset_label) : "",
       weeklyPct,
       weeklyBlocked,
+      primaryBlocked,
+      isLocked,
       weeklyReset: m7d ? formatReset(m7d.resets_at, m7d.reset_label) : "",
     };
   }
@@ -190,28 +200,50 @@
 
   function computeMoodAndPeak() {
     let peak = null;
-    const cappedProviders = [];
+    const weeklyLocked = [];
+    const sessionLocked = [];
     for (const [id, snap] of Object.entries(state.snapshots)) {
       if (id === "claude_code" || !snap || snap.status !== "ok") continue;
       let hasWeeklyCap = false;
+      let hasOtherCap = false;
       for (const m of snap.metrics || []) {
         if (typeof m.percent_used === "number") {
           peak = peak === null ? m.percent_used : Math.max(peak, m.percent_used);
         }
-        if (isWeeklyMetric(m) && isAtLimit(m)) hasWeeklyCap = true;
+        if (isAtLimit(m)) {
+          if (isWeeklyMetric(m)) hasWeeklyCap = true;
+          else hasOtherCap = true;
+        }
       }
-      if (hasWeeklyCap) cappedProviders.push(shortCodeFor(id));
+      if (hasWeeklyCap) weeklyLocked.push(shortCodeFor(id));
+      else if (hasOtherCap) sessionLocked.push(shortCodeFor(id));
     }
 
     if (peak === null) {
       return { peak: null, mood: "sleep", label: "Waiting", sub: "No quota data yet" };
     }
-    if (cappedProviders.length > 0) {
+    if (weeklyLocked.length > 0 && sessionLocked.length > 0) {
       return {
         peak,
         mood: "stressed",
-        label: "Weekly limit hit",
-        sub: `${cappedProviders.join(", ")} paused (7d 100%)`,
+        label: "Quota locked",
+        sub: `${[...weeklyLocked, ...sessionLocked].join(", ")} at limit`,
+      };
+    }
+    if (weeklyLocked.length > 0) {
+      return {
+        peak,
+        mood: "stressed",
+        label: "Weekly locked",
+        sub: `${weeklyLocked.join(", ")} locked (7d 100%)`,
+      };
+    }
+    if (sessionLocked.length > 0) {
+      return {
+        peak,
+        mood: "stressed",
+        label: "Limit locked",
+        sub: `${sessionLocked.join(", ")} locked (100%)`,
       };
     }
     if (peak <= 0.5) {
@@ -252,14 +284,19 @@
 
       const summary = extractCompactSummary(snap);
       const item = document.createElement("span");
-      const blocked = !!(summary && summary.weeklyBlocked);
-      item.className = `compact-item${blocked ? " is-blocked" : ""}`;
+      const locked = !!(summary && summary.isLocked);
+      const blockedByParent = !!(summary && summary.weeklyBlocked && !summary.primaryBlocked);
+      item.className = `compact-item${locked ? " is-locked" : ""}${blockedByParent ? " is-blocked" : ""}`;
       if (summary) {
         const pctTxt = summary.primaryPct !== null ? `${summary.primaryPct}%` : "--";
-        item.title = blocked
-          ? `${tag} paused: 7d at 100%${summary.weeklyReset ? ` (resets ${summary.weeklyReset})` : ""} · ${summary.primaryLabel} at ${pctTxt}`
-          : `${tag} ${summary.primaryLabel}: ${pctTxt}${summary.weeklyPct !== null ? ` · 7d: ${summary.weeklyPct}%` : ""}`;
-        item.innerHTML = blocked
+        if (summary.weeklyBlocked) {
+          item.title = `${tag} locked: 7d at 100%${summary.weeklyReset ? ` (resets ${summary.weeklyReset})` : ""} · ${summary.primaryLabel} at ${pctTxt}`;
+        } else if (summary.primaryBlocked) {
+          item.title = `${tag} locked: ${summary.primaryLabel} at 100%${summary.primaryReset ? ` (resets ${summary.primaryReset})` : ""}${summary.weeklyPct !== null ? ` · 7d: ${summary.weeklyPct}%` : ""}`;
+        } else {
+          item.title = `${tag} ${summary.primaryLabel}: ${pctTxt}${summary.weeklyPct !== null ? ` · 7d: ${summary.weeklyPct}%` : ""}`;
+        }
+        item.innerHTML = locked
           ? `<span class="compact-label">${tag}</span>${LOCK_SVG}<span class="compact-val">${pctTxt}</span>`
           : `<span class="compact-label">${tag}</span><span class="compact-val">${pctTxt}</span>`;
       } else {
@@ -297,17 +334,22 @@
     const sev = severityKey(metric.percent_used);
     const resetTxt = formatReset(metric.resets_at, metric.reset_label);
     const isFull = isAtLimit(metric);
+    const selfLocked = isFull && !blockedByWeekly;
 
     const row = document.createElement("div");
-    row.className = `gauge-row${blockedByWeekly ? " is-blocked" : ""}`;
+    row.className = `gauge-row${blockedByWeekly ? " is-blocked" : selfLocked ? " is-locked" : ""}`;
 
-    const rightSub = blockedByWeekly
-      ? `<span class="blocked-tag" title="Unavailable until weekly (7d) quota resets">${LOCK_SVG}<span>Paused · 7d full</span></span>`
-      : resetTxt
-        ? `<span class="gauge-reset">${escapeHtml(resetTxt)}</span>`
-        : metric.note
-          ? `<span class="gauge-reset">${escapeHtml(metric.note)}</span>`
-          : "";
+    let rightSub = "";
+    if (blockedByWeekly) {
+      rightSub = `<span class="blocked-tag" title="Unavailable until weekly (7d) quota resets">${LOCK_SVG}<span>Locked · 7d full</span></span>`;
+    } else if (selfLocked) {
+      const unlockTxt = resetTxt ? ` · ${escapeHtml(resetTxt)}` : "";
+      rightSub = `<span class="blocked-tag" title="Limit reached — locked until reset">${LOCK_SVG}<span>Locked${unlockTxt}</span></span>`;
+    } else if (resetTxt) {
+      rightSub = `<span class="gauge-reset">${escapeHtml(resetTxt)}</span>`;
+    } else if (metric.note) {
+      rightSub = `<span class="gauge-reset">${escapeHtml(metric.note)}</span>`;
+    }
 
     row.innerHTML = `
       <div class="gauge-meta">
@@ -315,7 +357,7 @@
           <span class="gauge-win">${escapeHtml(metric.label)}</span>
           ${rightSub}
         </span>
-        <span class="gauge-pct${isFull && !blockedByWeekly ? " is-full" : ""}">${Math.round(pct)}%</span>
+        <span class="gauge-pct${selfLocked ? " is-full" : ""}">${Math.round(pct)}%</span>
       </div>
       <div class="bar-track">
         <div class="bar-fill sev-${sev}" style="width:${Math.min(100, Math.max(0, pct))}%"></div>

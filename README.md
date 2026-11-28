@@ -17,14 +17,14 @@ A lightweight, privacy-first Windows desktop widget for monitoring AI coding quo
 Most desktop usage monitors bundle an entire 150–200 MB Chromium runtime (`Electron` or `PyQt6-WebEngine`). `maew usage` takes a leaner path:
 
 - **Uses Windows' built-in Edge WebView2** via `pywebview` — no bundled Chromium engine, tiny disk footprint, and low idle RAM (hidden web sync windows are destroyed immediately after reading).
-- **Weekly-cap lock clarity**: when a provider's `7d` (weekly) limit reaches `100%`, its `5h` gauge automatically switches to **`Paused · 7d full`** with a padlock icon and red status dot, so you never mistake `5h: 0%` for usable quota.
-- **Standardized Compact Mode**: always shows each provider's `5h` session percentage (`CL 0%`, `AG 42%`) plus a red padlock whenever `7d` is capped.
+- **Hierarchical lock clarity (`7d` > `5h`)**: when a provider's `7d` (weekly) limit hits `100%`, both `7d` (`Locked · <reset>`) and its child `5h` row (`Locked · 7d full`) show lock indicators; when only `5h` hits `100%`, only `5h` is marked `Locked · <reset>` while `7d` stays normal.
+- **Standardized Compact Mode**: always shows each provider's `5h` session percentage (`CL 0%`, `AG 42%`) plus a red padlock whenever **either** `7d` or `5h` is locked.
 - **Built-in Local Harness Scanner**: click **Scan** in Settings to detect installed CLIs (`agy`, `claude`, `codex`, `gh`, `opencode`) and local log folders offline without reading external credentials.
 - **Zero telemetry, encrypted secrets**: API keys and PATs are encrypted with **Windows DPAPI** (`crypt32.dll`), fonts (`IBM Plex Sans`, `JetBrains Mono`) are self-hosted locally, and browser sign-ins use an isolated WebView2 profile that never touches your main Chrome or Edge profile.
 
 ### Status & Non-Goals
 
-- **Current status:** `v1.0.1` (actively maintained, MIT licensed).
+- **Current status:** `v1.0.2` (actively maintained, MIT licensed).
 - **Windows only:** Built around Windows Edge WebView2 and Windows DPAPI (`crypt32.dll`). macOS and Linux are not currently targeted.
 - **Unofficial web scrapers may break:** `Claude.ai` and `Codex` web gauges read the rendered usage pages in an isolated WebView2 window. If Anthropic or OpenAI change their page layout, those gauges will show a clean error/stale indicator until updated (see [Provider issue template](.github/ISSUE_TEMPLATE/provider_broken.yml)).
 
@@ -57,7 +57,7 @@ Claude and Antigravity are enabled by default; all other providers are built in 
 
 ### Option 1: Windows Installer (Easiest — Recommended for Most Users)
 
-1. Go to the **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)** page and download **`maew-usage-v1.0.1-windows-x64-setup.exe`**.
+1. Go to the **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)** page and download **`maew-usage-v1.0.2-windows-x64-setup.exe`**.
 2. Run the installer (no administrator rights required):
    - Installs cleanly to `%LOCALAPPDATA%\Programs\maew-usage`
    - Adds a **Start Menu** shortcut (`maew usage`) and optional **Launch at Windows startup**
@@ -98,10 +98,10 @@ maew-usage
 
 ### Option 3: Portable `.zip` or Build Locally
 
-- **Portable `.zip`:** Download `maew-usage-v1.0.1-windows-x64.zip` from **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)**, extract the full folder (keeping `maew-usage.exe`, `maew-usage.exe.config`, and `_internal\` together), and run `maew-usage.exe`.
+- **Portable `.zip`:** Download `maew-usage-v1.0.2-windows-x64.zip` from **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)**, extract the full folder (keeping `maew-usage.exe`, `maew-usage.exe.config`, and `_internal\` together), and run `maew-usage.exe`.
 - **Verify checksum (optional):**
   ```powershell
-  Get-FileHash .\maew-usage-v1.0.1-windows-x64-setup.exe -Algorithm SHA256
+  Get-FileHash .\maew-usage-v1.0.2-windows-x64-setup.exe -Algorithm SHA256
   ```
 - **Run from source or build locally:**
   ```powershell
