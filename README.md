@@ -24,8 +24,8 @@ Most desktop usage monitors bundle an entire 150–200 MB Chromium runtime (`Ele
 
 ### Status & Non-Goals
 
-- **Current status:** `v1.0.0` (actively maintained, MIT licensed).
-- **Windows only in v1.0.0:** Built around Windows Edge WebView2 and Windows DPAPI (`crypt32.dll`). macOS and Linux are not currently targeted.
+- **Current status:** `v1.0.1` (actively maintained, MIT licensed).
+- **Windows only:** Built around Windows Edge WebView2 and Windows DPAPI (`crypt32.dll`). macOS and Linux are not currently targeted.
 - **Unofficial web scrapers may break:** `Claude.ai` and `Codex` web gauges read the rendered usage pages in an isolated WebView2 window. If Anthropic or OpenAI change their page layout, those gauges will show a clean error/stale indicator until updated (see [Provider issue template](.github/ISSUE_TEMPLATE/provider_broken.yml)).
 
 ---
@@ -57,7 +57,7 @@ Claude and Antigravity are enabled by default; all other providers are built in 
 
 ### Option 1: Windows Installer (Easiest — Recommended for Most Users)
 
-1. Go to the **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)** page and download **`maew-usage-v1.0.0-windows-x64-setup.exe`**.
+1. Go to the **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)** page and download **`maew-usage-v1.0.1-windows-x64-setup.exe`**.
 2. Run the installer (no administrator rights required):
    - Installs cleanly to `%LOCALAPPDATA%\Programs\maew-usage`
    - Adds a **Start Menu** shortcut (`maew usage`) and optional **Launch at Windows startup**
@@ -98,10 +98,10 @@ maew-usage
 
 ### Option 3: Portable `.zip` or Build Locally
 
-- **Portable `.zip`:** Download `maew-usage-v1.0.0-windows-x64.zip` from **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)**, extract the full folder (keeping `maew-usage.exe`, `maew-usage.exe.config`, and `_internal\` together), and run `maew-usage.exe`.
+- **Portable `.zip`:** Download `maew-usage-v1.0.1-windows-x64.zip` from **[Releases](https://github.com/ieatbaozi-stack/maew-ai-check/releases/latest)**, extract the full folder (keeping `maew-usage.exe`, `maew-usage.exe.config`, and `_internal\` together), and run `maew-usage.exe`.
 - **Verify checksum (optional):**
   ```powershell
-  Get-FileHash .\maew-usage-v1.0.0-windows-x64-setup.exe -Algorithm SHA256
+  Get-FileHash .\maew-usage-v1.0.1-windows-x64-setup.exe -Algorithm SHA256
   ```
 - **Run from source or build locally:**
   ```powershell
@@ -139,6 +139,7 @@ Click the **Settings** (gear) icon in the top-right corner of the widget:
 To avoid rate limits and keep CPU/RAM near zero while idle:
 - **Active mode:** refreshes every **5 minutes** (configurable) for 30 minutes after startup, manual refresh, or any detected quota change.
 - **Idle backoff:** doubles the wait interval on unchanged cycles (`5m → 10m → 20m → 40m → 60m` max).
+- **Auto-wake on return:** uses Windows `GetLastInputInfo` (read-only idle timer — never logs keys or mouse coordinates) plus sleep/wake detection to automatically refresh and resume the active 5-minute cadence as soon as you return to your PC after ≥5 minutes away or wake from sleep.
 - **Reset-aware refresh:** automatically pulls the next check forward to `resets_at + 1 minute` so gauges reset cleanly right after a window rolls over.
 
 ---

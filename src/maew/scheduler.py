@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import ctypes
+import sys
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -9,6 +12,98 @@ from .models import SnapshotStatus, UsageSnapshot
 
 ACTIVE_MODE_MINUTES = 30
 STALE_ERROR_RETRY_MINUTES = 1
+DEFAULT_IDLE_THRESHOLD_SECONDS = 300.0  # 5 min without OS input counts as idle
+DEFAULT_ACTIVE_RESUME_SECONDS = 15.0    # OS input within last 15s counts as active return
+DEFAULT_WAKE_COOLDOWN_SECONDS = 60.0    # minimum gap between auto-wake refreshes
+
+
+def get_os_idle_seconds() -> float | None:
+    """Return seconds since last Windows keyboard/mouse input via GetLastInputInfo.
+
+    Privacy: reads only the OS last-input tick timestamp — never installs input
+    hooks or inspects keys, mouse coordinates, or active windows.
+    """
+    if sys.platform != "win32":
+        return None
+    try:
+        class _LASTINPUTINFO(ctypes.Structure):
+            _fields_ = [("cbSize", ctypes.c_uint), ("dwTime", ctypes.c_uint32)]
+
+        info = _LASTINPUTINFO()
+        info.cbSize = ctypes.sizeof(_LASTINPUTINFO)
+        if not ctypes.windll.user32.GetLastInputInfo(ctypes.byref(info)):
+            return None
+        tick = ctypes.windll.kernel32.GetTickCount()
+        elapsed_ms = (int(tick) - int(info.dwTime)) & 0xFFFFFFFF
+        return elapsed_ms / 1000.0
+    except Exception:  # noqa: BLE001
+        return None
+
+
+class IdleReturnDetector:
+    """Detects when the user returns after OS idle or Windows sleep/hibernate."""
+
+    def __init__(
+        self,
+        *,
+        idle_threshold_seconds: float = DEFAULT_IDLE_THRESHOLD_SECONDS,
+        active_resume_seconds: float = DEFAULT_ACTIVE_RESUME_SECONDS,
+        cooldown_seconds: float = DEFAULT_WAKE_COOLDOWN_SECONDS,
+    ) -> None:
+        self.idle_threshold_seconds = idle_threshold_seconds
+        self.active_resume_seconds = active_resume_seconds
+        self.cooldown_seconds = cooldown_seconds
+        self._was_idle = False
+        self._last_wall: datetime | None = None
+        self._last_mono: float | None = None
+        self._last_wake_mono: float | None = None
+
+    def check(
+        self,
+        *,
+        idle_seconds: float | None,
+        now_wall: datetime | None = None,
+        now_mono: float | None = None,
+        last_refresh_at: datetime | None = None,
+    ) -> str | None:
+        """Return 'idle_return' or 'system_wake' when an automatic refresh should fire."""
+        now_wall = now_wall or datetime.now()
+        now_mono = time.monotonic() if now_mono is None else now_mono
+
+        reason: str | None = None
+
+        if self._last_wall is not None and self._last_mono is not None:
+            wall_delta = (now_wall - self._last_wall).total_seconds()
+            mono_delta = now_mono - self._last_mono
+            if wall_delta - mono_delta >= 60.0:
+                reason = "system_wake"
+        self._last_wall = now_wall
+        self._last_mono = now_mono
+
+        if idle_seconds is not None:
+            if idle_seconds >= self.idle_threshold_seconds:
+                self._was_idle = True
+            elif self._was_idle and idle_seconds <= self.active_resume_seconds:
+                self._was_idle = False
+                if reason is None:
+                    reason = "idle_return"
+
+        if reason is None:
+            return None
+
+        if (
+            self._last_wake_mono is not None
+            and (now_mono - self._last_wake_mono) < self.cooldown_seconds
+        ):
+            return None
+        if (
+            last_refresh_at is not None
+            and (now_wall - last_refresh_at).total_seconds() < self.cooldown_seconds
+        ):
+            return None
+
+        self._last_wake_mono = now_mono
+        return reason
 
 
 def adaptive_refresh_minutes(

@@ -5,6 +5,12 @@ All notable changes to `maew usage` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-11-28
+
+### Added
+- **Auto-wake refresh on return from idle or sleep**: uses Windows `GetLastInputInfo` (read-only idle timer — never hooks or logs input) plus sleep/hibernate wall-clock detection to automatically refresh quotas and resume the active 5-minute polling cadence when you return after ≥5 minutes away or wake your PC, with a 60-second anti-spam cooldown.
+- **Auto-refresh when reopening from System Tray**: showing a hidden widget after ≥1 minute triggers a fresh quota check automatically.
+
 ## [1.0.0] - 2026-11-27
 
 ### Added

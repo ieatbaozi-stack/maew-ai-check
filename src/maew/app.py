@@ -33,7 +33,7 @@ from .providers import (
 from .providers.claude_web import CLAUDE_LOGIN_URL, CLAUDE_USAGE_URL
 from .providers.codex import CODEX_LOGIN_URL, CODEX_USAGE_URL
 from .scanner import scan_local_harnesses
-from .scheduler import AdaptiveScheduler
+from .scheduler import AdaptiveScheduler, IdleReturnDetector, get_os_idle_seconds
 from .secrets import SecretStore
 from .tray import MaewTray
 
@@ -199,6 +199,7 @@ class MaewApp:
             active_minutes=self._config.active_refresh_minutes,
             max_minutes=self._config.idle_max_refresh_minutes,
         )
+        self._idle_detector = IdleReturnDetector()
         self._registry = ProviderRegistry()
         self._snapshots: dict[str, UsageSnapshot] = {}
         self._lock = threading.Lock()
@@ -550,6 +551,10 @@ class MaewApp:
             else:
                 self._window.show()
                 self._visible = True
+                with self._lock:
+                    last_upd = self._last_updated
+                if last_upd is None or (datetime.now() - last_upd).total_seconds() >= 60.0:
+                    self.request_refresh(manual=True)
         except Exception:  # noqa: BLE001
             pass
 
@@ -606,13 +611,28 @@ class MaewApp:
                 decision = self._scheduler.next_decision(self._snapshots)
                 self._next_refresh_at = decision.next_refresh_at
                 wait_s = decision.delay_seconds
+                next_at = decision.next_refresh_at
             self._push_state()
 
             end = time.monotonic() + wait_s
+            ticks = 0
             while not self._stop_event.is_set() and not self._wake_event.is_set():
                 remaining = end - time.monotonic()
-                if remaining <= 0:
+                if remaining <= 0 or datetime.now() >= next_at:
                     break
+                if ticks % 2 == 0:
+                    with self._lock:
+                        last_upd = self._last_updated
+                    wake_reason = self._idle_detector.check(
+                        idle_seconds=get_os_idle_seconds(),
+                        last_refresh_at=last_upd,
+                    )
+                    if wake_reason is not None:
+                        log.info("Auto-waking scheduler (%s) — resuming active refresh", wake_reason)
+                        self._manual_pending = True
+                        self._scheduler.mark_manual_activity()
+                        break
+                ticks += 1
                 self._wake_event.wait(timeout=min(1.0, remaining))
 
     # ----- Lifecycle -----
